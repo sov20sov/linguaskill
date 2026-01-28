@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
         host: '0.0.0.0',
         // في التطوير المحلي، استخدم proxy للاتصال بـ Backend
         // في الإنتاج على Vercel، سيتم استخدام /api مباشرة
-        proxy: process.env.NODE_ENV === 'development' ? {
+        proxy: {
           '/api': {
             target: 'http://localhost:3001',
             changeOrigin: true,
@@ -18,15 +18,17 @@ export default defineConfig(({ mode }) => {
             timeout: 10000,
             configure: (proxy, _options) => {
               proxy.on('error', (err, _req, res) => {
-                console.error('Proxy error:', err);
+                console.error('⚠️  Proxy error - Backend server may not be running');
+                console.error('   Start backend with: npm run dev:server');
                 if (res && !res.headersSent) {
-                  res.writeHead(500, {
+                  res.writeHead(503, {
                     'Content-Type': 'application/json',
                   });
                   res.end(JSON.stringify({
                     success: false,
-                    message: 'Backend server is not running. Please start it with: npm run dev:server',
-                    error: 'ECONNREFUSED'
+                    message: 'الخادم غير متاح حالياً. يرجى التأكد من تشغيل Backend.',
+                    error: 'ECONNREFUSED',
+                    hint: 'Run: npm run dev:server'
                   }));
                 }
               });
@@ -35,7 +37,7 @@ export default defineConfig(({ mode }) => {
               });
             },
           },
-        } : undefined,
+        },
       },
       plugins: [react()],
       define: {

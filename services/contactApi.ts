@@ -51,10 +51,10 @@ export const submitContactForm = async (
 
     if (!response.ok) {
       // إذا كان الخطأ بسبب عدم تشغيل Backend
-      if (data.error === 'ECONNREFUSED' || response.status === 500) {
+      if (data.error === 'ECONNREFUSED' || response.status === 503 || response.status === 404) {
         return {
           success: false,
-          message: 'الخادم غير متاح حالياً. يرجى المحاولة مرة أخرى لاحقاً.',
+          message: 'الخادم غير متاح حالياً. يرجى التأكد من تشغيل Backend.',
         };
       }
       
