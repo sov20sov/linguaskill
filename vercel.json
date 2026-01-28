@@ -22,10 +22,5 @@
       "src": "/(.*)",
       "dest": "/$1"
     }
-  ],
-  "env": {
-    "RESEND_API_KEY": "@resend_api_key",
-    "RESEND_FROM_EMAIL": "@resend_from_email",
-    "CONTACT_RECIPIENT_EMAIL": "@contact_recipient_email"
-  }
+  ]
 }
