@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-white dark:bg-secondary text-secondary dark:text-white;
+    font-family: 'Almarai', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* Glass Morphism Effects */
+  .glass {
+    @apply backdrop-blur-[12px] bg-white/5 border border-white/10;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  }
+
+  .glass-dark {
+    @apply backdrop-blur-[12px] bg-black/30 border border-white/10;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  }
+
+  .glass-primary {
+    @apply backdrop-blur-[12px] bg-primary/10 border border-primary/20;
+    box-shadow: 0 8px 32px 0 rgba(214, 242, 0, 0.1);
+  }
+
+  .glass-nav {
+    @apply backdrop-blur-[20px] bg-secondary/80 dark:bg-black/80 border-b border-white/10;
+  }
+
+  .glass-card {
+    @apply backdrop-blur-[10px] bg-white/10 dark:bg-black/20 border border-white/20 dark:border-white/10;
+  }
+
+  /* Text Contrast */
+  .text-contrast {
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  .dark .text-contrast {
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Smooth Transitions */
+  * {
+    transition-property: color, background-color, border-color, transform, opacity;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+
+  /* Focus States */
+  button:focus-visible,
+  a:focus-visible {
+    @apply outline-2 outline-primary outline-offset-2;
+  }
+}
+
+@layer utilities {
+  /* Custom Scrollbar */
+  .scrollbar-custom::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-gray-900;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb {
+    @apply bg-secondary dark:bg-gray-700;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary;
+  }
+
+  /* Touch Targets for Mobile */
+  @media (max-width: 768px) {
+    button, a {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+}

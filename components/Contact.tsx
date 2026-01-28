@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { CONTENT } from '../constants';
 import { submitContactForm, type ContactFormData } from '../services/contactApi';
 import SocialLinks from './SocialLinks';
+import { validateEmail, validatePhone, validateTelegram, validateName, validateMessage } from '../utils/validation';
 
 interface FormErrors {
   fullName?: string;
@@ -13,7 +14,7 @@ interface FormErrors {
   message?: string;
 }
 
-const Contact: React.FC = () => {
+const Contact: React.FC = memo(() => {
   const [formData, setFormData] = useState<ContactFormData>({
     fullName: '',
     phone: '',
@@ -35,37 +36,29 @@ const Contact: React.FC = () => {
     // التحقق من الاسم
     if (!formData.fullName.trim()) {
       newErrors.fullName = 'الاسم مطلوب';
-    } else if (formData.fullName.trim().length < 2) {
+    } else if (!validateName(formData.fullName)) {
       newErrors.fullName = 'الاسم يجب أن يكون أكثر من حرفين';
     }
 
     // التحقق من رقم الهاتف
-    const phoneRegex = /^[0-9+\-\s()]+$/;
     if (!formData.phone.trim()) {
       newErrors.phone = 'رقم الهاتف مطلوب';
-    } else if (!phoneRegex.test(formData.phone)) {
+    } else if (!validatePhone(formData.phone)) {
       newErrors.phone = 'رقم الهاتف غير صحيح';
-    } else if (formData.phone.replace(/\D/g, '').length < 8) {
-      newErrors.phone = 'رقم الهاتف يجب أن يكون صحيحاً';
     }
 
     // التحقق من البريد الإلكتروني
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email.trim()) {
       newErrors.email = 'البريد الإلكتروني مطلوب';
-    } else if (!emailRegex.test(formData.email)) {
+    } else if (!validateEmail(formData.email)) {
       newErrors.email = 'البريد الإلكتروني غير صحيح';
     }
 
     // التحقق من معرف التلجرام
-    const telegramRegex = /^[a-zA-Z0-9_]{5,32}$/;
     if (!formData.telegram.trim()) {
       newErrors.telegram = 'معرف التلجرام مطلوب';
-    } else {
-      const cleanedTelegram = formData.telegram.trim().replace('@', '');
-      if (!telegramRegex.test(cleanedTelegram)) {
-        newErrors.telegram = 'معرف التلجرام غير صحيح (يجب أن يكون 5-32 حرف، أرقام وحروف فقط)';
-      }
+    } else if (!validateTelegram(formData.telegram)) {
+      newErrors.telegram = 'معرف التلجرام غير صحيح (يجب أن يكون 5-32 حرف، أرقام وحروف فقط)';
     }
 
     // التحقق من المستوى
@@ -76,7 +69,7 @@ const Contact: React.FC = () => {
     // التحقق من الرسالة
     if (!formData.message.trim()) {
       newErrors.message = 'الرسالة مطلوبة';
-    } else if (formData.message.trim().length < 10) {
+    } else if (!validateMessage(formData.message)) {
       newErrors.message = 'الرسالة يجب أن تكون أكثر من 10 أحرف';
     }
 
@@ -433,6 +426,8 @@ const Contact: React.FC = () => {
       </div>
     </section>
   );
-};
+});
+
+Contact.displayName = 'Contact';
 
 export default Contact;

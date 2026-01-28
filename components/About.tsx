@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { CONTENT } from '../constants';
 
-const About: React.FC = () => {
+const About: React.FC = memo(() => {
   return (
     <section id="about" className="py-16 sm:py-20 md:py-24 bg-white dark:bg-secondary relative overflow-hidden transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -12,6 +12,8 @@ const About: React.FC = () => {
               <img 
                 src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=1000" 
                 alt="Linguaskill Environment" 
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
               />
               <div className="absolute inset-0 bg-secondary/10 group-hover:bg-transparent transition-all"></div>
@@ -58,6 +60,8 @@ const About: React.FC = () => {
       </div>
     </section>
   );
-};
+});
+
+About.displayName = 'About';
 
 export default About;

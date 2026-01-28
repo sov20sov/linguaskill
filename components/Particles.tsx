@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, memo } from 'react';
 import { Renderer, Camera, Geometry, Program, Mesh } from 'ogl';
 
 interface ParticlesProps {
@@ -249,6 +249,8 @@ const Particles: React.FC<ParticlesProps> = ({
   ]);
 
   return <div ref={containerRef} className={`relative w-full h-full ${className || ''}`} />;
-};
+});
+
+Particles.displayName = 'Particles';
 
 export default Particles;

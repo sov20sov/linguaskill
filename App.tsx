@@ -1,15 +1,23 @@
-
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
-import About from './components/About';
-import Features from './components/Features';
-import Impact from './components/Impact';
-import Courses from './components/Courses';
-import Methodology from './components/Methodology';
-import Testimonials from './components/Testimonials';
-import Contact from './components/Contact';
-import Footer from './components/Footer';
+
+// Lazy load components below the fold for better performance
+const About = lazy(() => import('./components/About'));
+const Features = lazy(() => import('./components/Features'));
+const Impact = lazy(() => import('./components/Impact'));
+const Courses = lazy(() => import('./components/Courses'));
+const Methodology = lazy(() => import('./components/Methodology'));
+const Testimonials = lazy(() => import('./components/Testimonials'));
+const Contact = lazy(() => import('./components/Contact'));
+const Footer = lazy(() => import('./components/Footer'));
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="min-h-[400px] flex items-center justify-center">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+  </div>
+);
 
 function App() {
   return (
@@ -17,15 +25,19 @@ function App() {
       <Navbar />
       <main>
         <Hero />
-        <About />
-        <Features />
-        <Impact />
-        <Courses />
-        <Methodology />
-        <Testimonials />
-        <Contact />
+        <Suspense fallback={<LoadingFallback />}>
+          <About />
+          <Features />
+          <Impact />
+          <Courses />
+          <Methodology />
+          <Testimonials />
+          <Contact />
+        </Suspense>
       </main>
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
     </div>
   );
 }

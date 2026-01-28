@@ -48,6 +48,43 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
-      }
+      },
+      build: {
+        // تحسينات الأداء
+        target: 'esnext',
+        minify: 'esbuild',
+        cssMinify: true,
+        sourcemap: false,
+        rollupOptions: {
+          output: {
+            // Code splitting - تقسيم الكود
+            manualChunks: {
+              'react-vendor': ['react', 'react-dom'],
+              'ogl-vendor': ['ogl'],
+            },
+            // تحسين أسماء الملفات
+            chunkFileNames: 'assets/js/[name]-[hash].js',
+            entryFileNames: 'assets/js/[name]-[hash].js',
+            assetFileNames: (assetInfo) => {
+              const info = assetInfo.name.split('.');
+              const ext = info[info.length - 1];
+              if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
+                return `assets/images/[name]-[hash][extname]`;
+              }
+              if (/woff2?|eot|ttf|otf/i.test(ext)) {
+                return `assets/fonts/[name]-[hash][extname]`;
+              }
+              return `assets/${ext}/[name]-[hash][extname]`;
+            },
+          },
+        },
+        // تحسين حجم الحزمة
+        chunkSizeWarningLimit: 1000,
+      },
+      // تحسين الأداء في التطوير
+      optimizeDeps: {
+        include: ['react', 'react-dom', 'ogl'],
+        exclude: [],
+      },
     };
 });

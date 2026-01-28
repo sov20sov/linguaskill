@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { CONTENT } from '../constants';
 
-const Testimonials: React.FC = () => {
+const Testimonials: React.FC = memo(() => {
   return (
     <section id="testimonials" className="py-16 sm:py-20 md:py-24 bg-white dark:bg-secondary border-y border-lightGray dark:border-darkGray transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -93,6 +93,8 @@ const Testimonials: React.FC = () => {
       </div>
     </section>
   );
-};
+});
+
+Testimonials.displayName = 'Testimonials';
 
 export default Testimonials;

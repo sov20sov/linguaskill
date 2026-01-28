@@ -1,34 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, memo } from 'react';
 import { CONTENT } from '../constants';
+import { useScroll } from '../hooks/useScroll';
+import { useDarkMode } from '../hooks/useDarkMode';
 
-const Navbar: React.FC = () => {
+const Navbar: React.FC = memo(() => {
   const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    return document.documentElement.classList.contains('dark') || 
-           localStorage.getItem('theme') === 'dark';
-  });
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [isDarkMode]);
-
-  const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
+  const scrolled = useScroll(20);
+  const { isDarkMode, toggle: toggleDarkMode } = useDarkMode();
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'glass-nav py-3 shadow-xl' : 'bg-transparent py-5'}`}>
@@ -114,6 +93,8 @@ const Navbar: React.FC = () => {
       </div>
     </nav>
   );
-};
+});
+
+Navbar.displayName = 'Navbar';
 
 export default Navbar;
