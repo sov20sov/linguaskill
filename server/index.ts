@@ -121,21 +121,21 @@ app.listen(PORT, () => {
   console.log(`📍 Current working directory: ${process.cwd()}`);
   console.log(`📍 Server directory: ${__dirname}\n`);
   
-  // التحقق من وجود بيانات SMTP
-  const smtpUser = process.env.SMTP_USER;
-  const smtpPass = process.env.SMTP_PASS;
+  // التحقق من وجود بيانات Resend
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.CONTACT_RECIPIENT_EMAIL;
+  const recipientEmail = process.env.CONTACT_RECIPIENT_EMAIL;
   
-  if (smtpUser && smtpPass) {
-    console.log(`✅ SMTP configured:`);
-    console.log(`   User: ${smtpUser}`);
-    console.log(`   Pass: ${smtpPass.substring(0, 4)}**** (hidden)`);
-    console.log(`   Host: ${process.env.SMTP_HOST || 'smtp.gmail.com'}`);
-    console.log(`   Port: ${process.env.SMTP_PORT || '587'}`);
-    console.log(`📧 Emails will be sent to: ${process.env.CONTACT_RECIPIENT_EMAIL || smtpUser}\n`);
+  if (resendApiKey && fromEmail && recipientEmail) {
+    console.log(`✅ Resend configured:`);
+    console.log(`   API Key: ${resendApiKey.substring(0, 8)}**** (hidden)`);
+    console.log(`   From Email: ${fromEmail}`);
+    console.log(`📧 Emails will be sent to: ${recipientEmail}\n`);
   } else {
-    console.error(`\n❌ ERROR: SMTP credentials not found!`);
-    console.error(`   SMTP_USER: ${smtpUser ? '✅ Set' : '❌ Missing'}`);
-    console.error(`   SMTP_PASS: ${smtpPass ? '✅ Set' : '❌ Missing'}`);
+    console.error(`\n❌ ERROR: Resend configuration incomplete!`);
+    console.error(`   RESEND_API_KEY: ${resendApiKey ? '✅ Set' : '❌ Missing'}`);
+    console.error(`   RESEND_FROM_EMAIL: ${fromEmail ? '✅ Set' : '❌ Missing'}`);
+    console.error(`   CONTACT_RECIPIENT_EMAIL: ${recipientEmail ? '✅ Set' : '❌ Missing'}`);
     console.error(`   Please check server/.env file\n`);
   }
 });

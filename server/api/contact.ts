@@ -6,7 +6,7 @@
  */
 
 import type { Request, Response } from 'express';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 interface ContactFormData {
   fullName: string;
@@ -100,45 +100,24 @@ const validateContactData = (data: ContactFormData): { valid: boolean; errors: s
 };
 
 /**
- * إعداد مرسل البريد الإلكتروني
+ * إعداد عميل Resend لإرسال البريد الإلكتروني
  */
-const createTransporter = () => {
-  // التحقق من وجود بيانات SMTP
-  const smtpUser = process.env.SMTP_USER;
-  const smtpPass = process.env.SMTP_PASS;
-  const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const smtpPort = parseInt(process.env.SMTP_PORT || '587');
+const createResendClient = () => {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.CONTACT_RECIPIENT_EMAIL;
 
-  if (!smtpUser || !smtpPass) {
-    throw new Error('SMTP credentials are missing. Please check your .env file.');
+  if (!resendApiKey) {
+    throw new Error('RESEND_API_KEY is missing. Please check your .env file.');
   }
 
-  const transporterConfig: any = {
-    host: smtpHost,
-    port: smtpPort,
-    secure: smtpPort === 465, // true for 465, false for other ports
-    auth: {
-      user: smtpUser.trim(), // بريد الإرسال
-      pass: smtpPass.trim(), // كلمة مرور البريد أو App Password
-    },
-    tls: {
-      // لا ترفض الاتصالات غير المصرح بها
-      rejectUnauthorized: false
-    }
-  };
-
-  // إضافة خيارات إضافية لـ Gmail
-  if (smtpHost.includes('gmail.com')) {
-    transporterConfig.service = 'gmail';
+  if (!fromEmail) {
+    throw new Error('RESEND_FROM_EMAIL or CONTACT_RECIPIENT_EMAIL is missing. Please check your .env file.');
   }
 
-  console.log(`🔧 Creating SMTP transporter with:`);
-  console.log(`   Host: ${smtpHost}`);
-  console.log(`   Port: ${smtpPort}`);
-  console.log(`   User: ${smtpUser.trim()}`);
-  console.log(`   Secure: ${transporterConfig.secure}`);
+  console.log(`🔧 Creating Resend client`);
+  console.log(`   From Email: ${fromEmail}`);
 
-  return nodemailer.createTransport(transporterConfig);
+  return new Resend(resendApiKey);
 };
 
 /**
@@ -268,35 +247,37 @@ export const handleContactSubmission = async (req: Request, res: Response) => {
       });
     }
 
-    // التحقق من وجود بيانات SMTP قبل المحاولة
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.error('❌ SMTP credentials missing!');
-      console.error('   SMTP_USER:', process.env.SMTP_USER ? '✅' : '❌');
-      console.error('   SMTP_PASS:', process.env.SMTP_PASS ? '✅' : '❌');
-      throw new Error('SMTP configuration is incomplete. Please check server/.env file');
+    // التحقق من وجود بيانات Resend قبل المحاولة
+    if (!process.env.RESEND_API_KEY) {
+      console.error('❌ Resend API key missing!');
+      console.error('   RESEND_API_KEY:', process.env.RESEND_API_KEY ? '✅' : '❌');
+      throw new Error('Resend configuration is incomplete. Please check server/.env file');
     }
 
-    // إعداد البريد الإلكتروني
-    const transporter = createTransporter();
-    
-    // التحقق من صحة الاتصال (اختياري - يمكن إزالته في الإنتاج)
-    try {
-      await transporter.verify();
-      console.log(`✅ SMTP connection verified successfully`);
-    } catch (verifyError: any) {
-      console.error(`❌ SMTP verification failed:`, verifyError.message);
-      throw new Error(`SMTP connection failed: ${verifyError.message}`);
+    const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.CONTACT_RECIPIENT_EMAIL;
+    if (!fromEmail) {
+      console.error('❌ From email missing!');
+      console.error('   RESEND_FROM_EMAIL or CONTACT_RECIPIENT_EMAIL is required');
+      throw new Error('From email is missing. Please set RESEND_FROM_EMAIL or CONTACT_RECIPIENT_EMAIL in .env file');
     }
+
+    // إعداد عميل Resend
+    const resend = createResendClient();
     
     const emailContent = createEmailContent(cleanedData);
-    const recipientEmail = process.env.CONTACT_RECIPIENT_EMAIL || process.env.SMTP_USER;
+    const recipientEmail = process.env.CONTACT_RECIPIENT_EMAIL;
 
-    console.log(`📧 Attempting to send email to: ${recipientEmail}`);
-    console.log(`   From: ${process.env.SMTP_USER}`);
+    if (!recipientEmail) {
+      throw new Error('CONTACT_RECIPIENT_EMAIL is missing. Please check your .env file');
+    }
 
-    // إرسال البريد الإلكتروني
-    const info = await transporter.sendMail({
-      from: `"Linguaskill Institute" <${process.env.SMTP_USER}>`,
+    console.log(`📧 Attempting to send email using Resend`);
+    console.log(`   From: ${fromEmail}`);
+    console.log(`   To: ${recipientEmail}`);
+
+    // إرسال البريد الإلكتروني باستخدام Resend
+    const { data, error } = await resend.emails.send({
+      from: `Linguaskill Institute <${fromEmail}>`,
       to: recipientEmail,
       replyTo: cleanedData.email,
       subject: emailContent.subject,
@@ -304,7 +285,12 @@ export const handleContactSubmission = async (req: Request, res: Response) => {
       text: emailContent.text,
     });
 
-    console.log(`✅ Email sent successfully! Message ID: ${info.messageId}`);
+    if (error) {
+      console.error('❌ Resend error:', error);
+      throw new Error(`Failed to send email: ${error.message}`);
+    }
+
+    console.log(`✅ Email sent successfully! Message ID: ${data?.id}`);
 
     // إرسال رد نجاح
     res.status(200).json({
@@ -317,22 +303,26 @@ export const handleContactSubmission = async (req: Request, res: Response) => {
     console.error('   Error message:', error.message);
     
     // رسائل خطأ أكثر تفصيلاً في الـ console للمطور
-    if (error.code === 'EAUTH') {
-      console.error('   🔐 Authentication failed!');
+    if (error.message?.includes('RESEND_API_KEY')) {
+      console.error('   🔑 Resend API Key missing!');
       console.error('   Please check:');
-      console.error('   1. SMTP_USER is correct:', process.env.SMTP_USER);
-      console.error('   2. SMTP_PASS is correct (App Password, not regular password)');
-      console.error('   3. 2-Step Verification is enabled on Gmail');
-      console.error('   4. App Password was generated correctly');
-    } else if (error.code === 'ECONNECTION') {
-      console.error('   🌐 Connection failed!');
-      console.error('   Please check your internet connection and SMTP settings');
+      console.error('   1. RESEND_API_KEY is set in server/.env');
+      console.error('   2. API key is correct and active');
+      console.error('   3. Domain is verified in Resend dashboard');
+    } else if (error.message?.includes('From email')) {
+      console.error('   📧 From email configuration error!');
+      console.error('   Please check:');
+      console.error('   1. RESEND_FROM_EMAIL is set in server/.env');
+      console.error('   2. Email domain is verified in Resend');
+    } else if (error.message?.includes('Resend')) {
+      console.error('   📬 Resend service error!');
+      console.error('   Please check your Resend dashboard for more details');
     }
     
     // عدم كشف تفاصيل الخطأ للمستخدم
     let userMessage = 'حدث خطأ أثناء معالجة طلبك. يرجى المحاولة مرة أخرى لاحقاً.';
     
-    if (error.message && error.message.includes('SMTP')) {
+    if (error.message && error.message.includes('Resend')) {
       userMessage = 'خطأ في إعدادات البريد الإلكتروني. يرجى التواصل مع الدعم الفني.';
     }
     
