@@ -88,6 +88,7 @@ Each section is designed with clarity, simplicity, and academic focus.
 - Modular and scalable structure
 - Clean and maintainable codebase
 - Ready for future expansion (CMS, Dashboard, Multi-language)
+- **Security:** Contact API is rate-limited; secrets (e.g. Resend, Gemini) are server-side only — never in the frontend bundle.
 
 ---
 
