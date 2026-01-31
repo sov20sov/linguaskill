@@ -1,7 +1,7 @@
-
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, lazy, Suspense } from 'react';
 import { CONTENT } from '../constants';
-import Particles from './Particles';
+
+const Particles = lazy(() => import('./Particles'));
 
 const Hero: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -57,23 +57,25 @@ const Hero: React.FC = () => {
 
   return (
   <section id="home" className="relative min-h-screen flex items-center overflow-hidden pt-20">
-  {/* Particles Background - خلفية الجسيمات */}
+  {/* Particles Background - تحميل كسول لتقليل TBT (ogl يُحمّل بعد أول رسم) */}
   <div className="absolute inset-0 z-0">
-    <Particles
-      particleCount={300}
-      particleSpread={12}
-      speed={0.15}
-      particleColors={['#ffffff', '#ffffff', '#ffffff']}
-      moveParticlesOnHover={true}
-      particleHoverFactor={2}
-      alphaParticles={true}
-      particleBaseSize={80}
-      sizeRandomness={0.8}
-      cameraDistance={20}
-      disableRotation={false}
-      pixelRatio={pixelRatio}
-      className="opacity-60 dark:opacity-40"
-    />
+    <Suspense fallback={<div className="absolute inset-0" aria-hidden="true" />}>
+      <Particles
+        particleCount={300}
+        particleSpread={12}
+        speed={0.15}
+        particleColors={['#ffffff', '#ffffff', '#ffffff']}
+        moveParticlesOnHover={true}
+        particleHoverFactor={2}
+        alphaParticles={true}
+        particleBaseSize={80}
+        sizeRandomness={0.8}
+        cameraDistance={20}
+        disableRotation={false}
+        pixelRatio={pixelRatio}
+        className="opacity-60 dark:opacity-40"
+      />
+    </Suspense>
   </div>
   
   {/* Dark overlay for better contrast */}
@@ -99,8 +101,7 @@ const Hero: React.FC = () => {
             loop
             playsInline
             muted={isMuted}
-            preload="metadata"
-            loading="lazy"
+            preload="auto"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
           />
           {/* Overlay خفيف */}
@@ -108,10 +109,10 @@ const Hero: React.FC = () => {
           
           {/* Video Controls Overlay */}
           <div className={`absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${showControls ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-            <div className="flex gap-3 sm:gap-4 items-center" onClick={(e) => e.stopPropagation()}>
+            <div className="flex gap-3 sm:gap-4 items-center" onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}>
               {/* Play/Pause Button */}
               <button
-                onClick={(e) => {
+                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                   e.stopPropagation();
                   togglePlayPause();
                 }}
@@ -131,7 +132,7 @@ const Hero: React.FC = () => {
               
               {/* Mute/Unmute Button */}
               <button
-                onClick={(e) => {
+                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                   e.stopPropagation();
                   toggleMute();
                 }}

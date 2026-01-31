@@ -12,12 +12,7 @@ const Testimonials = lazy(() => import('./components/Testimonials'));
 const Contact = lazy(() => import('./components/Contact'));
 const Footer = lazy(() => import('./components/Footer'));
 
-// Loading fallback component
-const LoadingFallback = () => (
-  <div className="min-h-[400px] flex items-center justify-center">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-  </div>
-);
+const SectionFallback = () => <div className="min-h-[320px]" aria-hidden="true" />;
 
 function App() {
   return (
@@ -25,13 +20,25 @@ function App() {
       <Navbar />
       <main>
         <Hero />
-        <Suspense fallback={<LoadingFallback />}>
+        <Suspense fallback={<SectionFallback />}>
           <About />
+        </Suspense>
+        <Suspense fallback={<SectionFallback />}>
           <Features />
+        </Suspense>
+        <Suspense fallback={<SectionFallback />}>
           <Impact />
+        </Suspense>
+        <Suspense fallback={<SectionFallback />}>
           <Courses />
+        </Suspense>
+        <Suspense fallback={<SectionFallback />}>
           <Methodology />
+        </Suspense>
+        <Suspense fallback={<SectionFallback />}>
           <Testimonials />
+        </Suspense>
+        <Suspense fallback={<SectionFallback />}>
           <Contact />
         </Suspense>
       </main>
